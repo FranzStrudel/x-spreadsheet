@@ -1,6 +1,6 @@
 /* global window */
 import { h } from './element';
-import { bind, mouseMoveUp, bindTouch } from './event';
+import { bind, bindTouch, mouseMoveUp } from './event';
 import Resizer from './resizer';
 import Scrollbar from './scrollbar';
 import Selector from './selector';
@@ -483,12 +483,14 @@ function dataSetCellText(text, state = 'finished') {
   const { data, table } = this;
   // const [ri, ci] = selector.indexes;
   if (data.settings.mode === 'read') return;
+
   data.setSelectedCellText(text, state);
   const { ri, ci } = data.selector;
   if (state === 'finished') {
+    if (data.getSelectedCell().editable !== false) {
+      this.trigger('cell-edited', text, ri, ci);
+    }
     table.render();
-  } else {
-    this.trigger('cell-edited', text, ri, ci);
   }
 }
 
