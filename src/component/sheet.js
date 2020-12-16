@@ -928,6 +928,7 @@ export default class Sheet {
     this.print.resetData(data);
     this.selector.resetData(data);
     this.table.resetData(data);
+    this.trigger('sheet-selected', this.data.name);
   }
 
   loadData(data) {

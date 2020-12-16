@@ -38,6 +38,7 @@ declare module 'x-data-spreadsheet' {
   export type CELL_SELECTED = 'cell-selected';
   export type CELLS_SELECTED = 'cells-selected';
   export type CELL_EDITED = 'cell-edited';
+  export type SHEET_SELECTED = 'sheet-selected';
 
   export type CellMerge = [number, number];
 
@@ -56,6 +57,10 @@ declare module 'x-data-spreadsheet' {
     (
       evnt: CELL_EDITED,
       callback: (text: string, rowIndex: number, colIndex: number) => void
+    ): void;
+    (
+      evnt: SHEET_SELECTED,
+      callback: (name: string) => void
     ): void;
   }
 
@@ -190,7 +195,7 @@ declare module 'x-data-spreadsheet' {
   }
   global {
     interface Window {
-      x_spreadsheet(container: string | HTMLElement, opts?: Options): Spreadsheet; 
+      x_spreadsheet(container: string | HTMLElement, opts?: Options): Spreadsheet;
     }
   }
 }
