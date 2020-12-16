@@ -699,6 +699,23 @@ export default class DataProxy {
     return false;
   }
 
+  canMerge() {
+    if (!this.selector.multiple()) return false;
+
+    const {
+      sri, sci, eri, eci,
+    } = this.selector.range;
+    for (let i = sri; i <= eri; i += 1) {
+      for (let j = sci; j <= eci; j += 1) {
+        const cell = this.getCell(i, j);
+        if (cell && cell.editable === false) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   merge() {
     const { selector, rows } = this;
     if (this.isSignleSelected()) return;

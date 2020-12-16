@@ -188,7 +188,7 @@ export default class Toolbar {
     // console.log('canUndo:', data.canUndo());
     this.undoEl.setState(!data.canUndo());
     this.redoEl.setState(!data.canRedo());
-    this.mergeEl.setState(data.canUnmerge(), !data.selector.multiple());
+    this.mergeEl.setState(data.canUnmerge(), !data.canMerge());
     this.autofilterEl.setState(!data.canAutofilter());
     // this.mergeEl.disabled();
     // console.log('selectedCell:', style, cell);

@@ -2,7 +2,10 @@ import helper from './helper';
 import { expr2expr } from './alphabet';
 
 class Rows {
-  constructor({ len, height }) {
+  constructor({
+    len,
+    height,
+  }) {
     this._ = {};
     this.len = len;
     // default row height
@@ -29,7 +32,9 @@ class Rows {
       index -= 1;
       if (this.isHide(index)) {
         this.setHide(index, false);
-      } else break;
+      } else {
+        break;
+      }
     }
   }
 
@@ -40,8 +45,11 @@ class Rows {
 
   setHide(ri, v) {
     const row = this.getOrNew(ri);
-    if (v === true) row.hide = true;
-    else delete row.hide;
+    if (v === true) {
+      row.hide = true;
+    } else {
+      delete row.hide;
+    }
   }
 
   setStyle(ri, style) {
@@ -92,6 +100,7 @@ class Rows {
   // what: all | text | format
   setCell(ri, ci, cell, what = 'all') {
     const row = this.getOrNew(ri);
+    if (row.cells[ci].editable === false) return;
     if (what === 'all') {
       row.cells[ci] = cell;
     } else if (what === 'text') {
@@ -106,13 +115,18 @@ class Rows {
 
   setCellText(ri, ci, text) {
     const cell = this.getCellOrNew(ri, ci);
+    if (cell.editable === false) return;
     cell.text = text;
   }
 
   // what: all | format | text
-  copyPaste(srcCellRange, dstCellRange, what, autofill = false, cb = () => {}) {
+  copyPaste(srcCellRange, dstCellRange, what, autofill = false, cb = () => {
+  }) {
     const {
-      sri, sci, eri, eci,
+      sri,
+      sci,
+      eri,
+      eci,
     } = srcCellRange;
     const dsri = dstCellRange.sri;
     const dsci = dstCellRange.sci;
@@ -125,8 +139,11 @@ class Rows {
     let dn = 0;
     if (deri < sri || deci < sci) {
       isAdd = false;
-      if (deri < sri) dn = drn;
-      else dn = dcn;
+      if (deri < sri) {
+        dn = drn;
+      } else {
+        dn = dcn;
+      }
     }
     for (let i = sri; i <= eri; i += 1) {
       if (this._[i]) {
@@ -184,8 +201,17 @@ class Rows {
         let nri = parseInt(ri, 10);
         let nci = parseInt(ci, 10);
         if (srcCellRange.includes(ri, ci)) {
-          nri = dstCellRange.sri + (nri - srcCellRange.sri);
-          nci = dstCellRange.sci + (nci - srcCellRange.sci);
+          if (this.getCell(nri, nci).editable === false) {
+            ncellmm[nri] = ncellmm[nri] || { cells: {} };
+            ncellmm[nri].cells[nci] = this._[ri].cells[ci];
+          }
+
+          const tentativeDestNri = dstCellRange.sri + (nri - srcCellRange.sri);
+          const tentativeDestNci = dstCellRange.sci + (nci - srcCellRange.sci);
+          if (this.getCellOrNew(tentativeDestNri, tentativeDestNci).editable !== false) {
+            nri = tentativeDestNri;
+            nci = tentativeDestNci;
+          }
         }
         ncellmm[nri] = ncellmm[nri] || { cells: {} };
         ncellmm[nri].cells[nci] = this._[ri].cells[ci];
@@ -197,7 +223,10 @@ class Rows {
   // src: Array<Array<String>>
   paste(src, dstCellRange) {
     if (src.length <= 0) return;
-    const { sri, sci } = dstCellRange;
+    const {
+      sri,
+      sci,
+    } = dstCellRange;
     src.forEach((row, i) => {
       const ri = sri + i;
       row.forEach((cell, j) => {
@@ -293,7 +322,7 @@ class Rows {
     const row = this.get(ri);
     if (row !== null) {
       const cell = this.getCell(ri, ci);
-      if (cell !== null) {
+      if (cell !== null && cell.editable !== false) {
         if (what === 'all') {
           delete row.cells[ci];
         } else if (what === 'text') {
@@ -323,16 +352,18 @@ class Rows {
   }
 
   each(cb) {
-    Object.entries(this._).forEach(([ri, row]) => {
-      cb(ri, row);
-    });
+    Object.entries(this._)
+      .forEach(([ri, row]) => {
+        cb(ri, row);
+      });
   }
 
   eachCells(ri, cb) {
     if (this._[ri] && this._[ri].cells) {
-      Object.entries(this._[ri].cells).forEach(([ci, cell]) => {
-        cb(ci, cell);
-      });
+      Object.entries(this._[ri].cells)
+        .forEach(([ci, cell]) => {
+          cb(ci, cell);
+        });
     }
   }
 
