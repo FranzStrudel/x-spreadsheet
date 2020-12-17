@@ -116,7 +116,14 @@ class Rows {
   setCellText(ri, ci, text) {
     const cell = this.getCellOrNew(ri, ci);
     if (cell.editable === false) return;
-    cell.text = cell.format ? cell.format(text, cell.text) : text;
+    const format = (newText, oldText) => {
+      switch (typeof oldText) {
+        case 'number': return parseFloat(newText);
+        case 'boolean': return newText === 'true';
+        default: return newText;
+      }
+    };
+    cell.text = format(text, cell.text);
   }
 
   // what: all | format | text
