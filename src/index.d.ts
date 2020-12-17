@@ -72,6 +72,7 @@ declare module 'x-data-spreadsheet' {
    * Data for representing a cell
    */
   export interface CellData {
+    format: <T>(newText: string, oldText: T) => T;
     text: string;
     style?: number;
     merge?: CellMerge;

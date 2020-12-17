@@ -26,11 +26,15 @@ class DropdownMore extends Dropdown {
     this.setContentChildren(...eles);
   }
 
-  setTitle() {}
+  setTitle() {
+  }
 }
 
 const menuItems = [
-  { key: 'delete', title: tf('contextmenu.deleteSheet') },
+  {
+    key: 'delete',
+    title: tf('contextmenu.deleteSheet')
+  },
 ];
 
 function buildMenuItem(item) {
@@ -52,7 +56,8 @@ class ContextMenu {
       .css('width', '160px')
       .children(...buildMenu.call(this))
       .hide();
-    this.itemClick = () => {};
+    this.itemClick = () => {
+    };
   }
 
   hide() {
@@ -73,9 +78,11 @@ export default class Bottombar {
   constructor(addFunc = () => {},
     swapFunc = () => {},
     deleteFunc = () => {},
-    updateFunc = () => {}) {
+    updateFunc = () => {},
+    sheetEditable = false) {
     this.swapFunc = swapFunc;
     this.updateFunc = updateFunc;
+    this.sheetEditable = sheetEditable;
     this.dataNames = [];
     this.activeEl = null;
     this.deleteEl = null;
@@ -85,50 +92,66 @@ export default class Bottombar {
     });
     this.contextMenu = new ContextMenu();
     this.contextMenu.itemClick = deleteFunc;
-    this.el = h('div', `${cssPrefix}-bottombar`).children(
-      this.contextMenu.el,
-      this.menuEl = h('ul', `${cssPrefix}-menu`).child(
-        h('li', '').children(
-          new Icon('add').on('click', () => {
-            if (this.dataNames.length < 10) {
-              addFunc();
-            } else {
-              xtoast('tip', 'it less than or equal to 10');
-            }
-          }),
-          h('span', '').child(this.moreEl),
-        ),
-      ),
-    );
+    this.el = h('div', `${cssPrefix}-bottombar`)
+      .children(
+        this.contextMenu.el,
+        this.menuEl = h('ul', `${cssPrefix}-menu`)
+          .child(
+            h('li', '')
+              .children(
+                this.sheetEditable
+                  ? [
+                    new Icon('add').on('click', () => {
+                      if (this.dataNames.length < 10) addFunc();
+                      else xtoast('tip', 'it less than or equal to 10');
+                    }),
+                    h('span', '').child(this.moreEl),
+                  ]
+                  : h('span', '').child(this.moreEl),
+              ),
+          ),
+      );
   }
 
   addItem(name, active) {
     this.dataNames.push(name);
-    const item = h('li', active ? 'active' : '').child(name);
+    const item = h('li', active ? 'active' : '')
+      .child(name);
     item.on('click', () => {
       this.clickSwap2(item);
-    }).on('contextmenu', (evt) => {
-      const { offsetLeft, offsetHeight } = evt.target;
-      this.contextMenu.setOffset({ left: offsetLeft, bottom: offsetHeight + 1 });
-      this.deleteEl = item;
-    }).on('dblclick', () => {
-      const v = item.html();
-      const input = new FormInput('auto', '');
-      input.val(v);
-      input.input.on('blur', ({ target }) => {
-        const { value } = target;
-        const nindex = this.dataNames.findIndex(it => it === v);
-        this.renameItem(nindex, value);
-        /*
-        this.dataNames.splice(nindex, 1, value);
-        this.moreEl.reset(this.dataNames);
-        item.html('').child(value);
-        this.updateFunc(nindex, value);
-        */
+    })
+      .on('contextmenu', (evt) => {
+        if (!this.sheetEditable) return;
+        const {
+          offsetLeft,
+          offsetHeight
+        } = evt.target;
+        this.contextMenu.setOffset({
+          left: offsetLeft,
+          bottom: offsetHeight + 1
+        });
+        this.deleteEl = item;
+      })
+      .on('dblclick', () => {
+        if (!this.sheetEditable) return;
+        const v = item.html();
+        const input = new FormInput('auto', '');
+        input.val(v);
+        input.input.on('blur', ({ target }) => {
+          const { value } = target;
+          const nindex = this.dataNames.findIndex(it => it === v);
+          this.renameItem(nindex, value);
+          /*
+          this.dataNames.splice(nindex, 1, value);
+          this.moreEl.reset(this.dataNames);
+          item.html('').child(value);
+          this.updateFunc(nindex, value);
+          */
+        });
+        item.html('')
+          .child(input.el);
+        input.focus();
       });
-      item.html('').child(input.el);
-      input.focus();
-    });
     if (active) {
       this.clickSwap(item);
     }
@@ -140,7 +163,8 @@ export default class Bottombar {
   renameItem(index, value) {
     this.dataNames.splice(index, 1, value);
     this.moreEl.reset(this.dataNames);
-    this.items[index].html('').child(value);
+    this.items[index].html('')
+      .child(value);
     this.updateFunc(index, value);
   }
 
@@ -154,7 +178,10 @@ export default class Bottombar {
   }
 
   deleteItem() {
-    const { activeEl, deleteEl } = this;
+    const {
+      activeEl,
+      deleteEl
+    } = this;
     if (this.items.length > 1) {
       const index = this.items.findIndex(it => it === deleteEl);
       this.items.splice(index, 1);

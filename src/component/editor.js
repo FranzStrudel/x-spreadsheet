@@ -273,7 +273,7 @@ export default class Editor {
   }
 
   setText(text) {
-    this.inputText = text;
+    this.inputText = String(text);
     // console.log('text>>:', text);
     setText.call(this, text, text.length);
     resetTextareaSize.call(this);
