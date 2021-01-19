@@ -100,7 +100,7 @@ class Rows {
   // what: all | text | format
   setCell(ri, ci, cell, what = 'all') {
     const row = this.getOrNew(ri);
-    if (row.cells[ci].editable === false) return;
+    if (row.cells[ci] && row.cells[ci].editable === false) return;
     if (what === 'all') {
       row.cells[ci] = cell;
     } else if (what === 'text') {
