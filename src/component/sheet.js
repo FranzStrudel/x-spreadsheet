@@ -432,11 +432,11 @@ function editorSetOffset() {
   editor.setOffset(sOffset, sPosition);
 }
 
-function editorSet() {
+function editorSet(select) {
   const { editor, data } = this;
   if (data.settings.mode === 'read') return;
   editorSetOffset.call(this);
-  editor.setCell(data.getSelectedCell(), data.getSelectedValidator());
+  editor.setCell(data.getSelectedCell(), data.getSelectedValidator(), select);
   clearClipboard.call(this);
 }
 
@@ -600,7 +600,7 @@ function sheetInitEvents() {
         }
         evt.stopPropagation();
       } else if (evt.detail === 2) {
-        editorSet.call(this);
+        editorSet.call(this, true);
       } else {
         overlayerMousedown.call(this, evt);
       }
@@ -696,7 +696,7 @@ function sheetInitEvents() {
   });
 
   bind(window, 'paste', (evt) => {
-    if(!this.focusing) return;
+    if (!this.focusing) return;
     paste.call(this, 'all', evt);
     evt.preventDefault();
   });

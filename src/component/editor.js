@@ -105,27 +105,27 @@ function inputEventHandler(evt) {
   }
 }
 
-function setTextareaRange(position) {
+function setTextareaRange(position, select) {
   const { el } = this.textEl;
   setTimeout(() => {
     el.focus();
-    el.setSelectionRange(position, position);
+    el.setSelectionRange(select ? 0 : position, position);
   }, 0);
 }
 
-function setText(text, position) {
+function setText(text, position, select) {
   const { textEl, textlineEl } = this;
   // firefox bug
   textEl.el.blur();
 
   textEl.val(text);
   textlineEl.html(text);
-  setTextareaRange.call(this, position);
+  setTextareaRange.call(this, position, select);
 }
 
 function suggestItemClick(it) {
   const { inputText, validator } = this;
-  let position = 0;
+  let position;
   if (validator && validator.type === 'list') {
     this.inputText = it;
     position = this.inputText.length;
@@ -246,13 +246,13 @@ export default class Editor {
     }
   }
 
-  setCell(cell, validator) {
+  setCell(cell, validator, select) {
     // console.log('::', validator);
     const { el, datepicker, suggest } = this;
     el.show();
     this.cell = cell;
     const text = (!cell || cell.text === null || cell.text === undefined) ? '' : cell.text;
-    this.setText(text);
+    this.setText(text, select);
 
     this.validator = validator;
     if (validator) {
@@ -270,10 +270,10 @@ export default class Editor {
     }
   }
 
-  setText(text) {
+  setText(text, select) {
     this.inputText = String(text);
     // console.log('text>>:', text);
-    setText.call(this, text, text.length);
+    setText.call(this, text, text.length, select);
     resetTextareaSize.call(this);
   }
 }
