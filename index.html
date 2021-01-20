@@ -77,14 +77,7 @@
           console.log('>>>', xs.getData());
         });
 
-      xs.on('cell-selected', (cell, ri, ci) => {
-          console.log('cell:', cell, ', ri:', ri, ', ci:', ci);
-        }).on('cell-edited', (text, ri, ci) => {
-          console.log('text:', text, ', ri: ', ri, ', ci:', ci);
-        })
-      .on('sheet-selected', (name) => {
-        console.log('sheet:', name);
-      });
+      xs.on('cell-edited', (v,b,n) => console.log(v + " " + b + " " + n));
 
       setTimeout(() => {
         // xs.loadData([{ rows }]);

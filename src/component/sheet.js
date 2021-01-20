@@ -324,11 +324,11 @@ function cut() {
 function paste(what, evt) {
   const { data } = this;
   if (data.settings.mode === 'read') return;
-  if (data.paste(what, msg => xtoast('Tip', msg))) {
+  if (data.paste(what, msg => xtoast('Tip', msg), this)) {
     sheetReset.call(this);
   } else if (evt) {
     const cdata = evt.clipboardData.getData('text/plain');
-    this.data.pasteFromText(cdata);
+    this.data.pasteFromText(cdata, this);
     sheetReset.call(this);
   }
 }
@@ -403,7 +403,7 @@ function overlayerMousedown(evt) {
       }
     }, () => {
       if (isAutofillEl && selector.arange && data.settings.mode !== 'read') {
-        if (data.autofill(selector.arange, 'all', msg => xtoast('Tip', msg))) {
+        if (data.autofill(selector.arange, 'all', msg => xtoast('Tip', msg), this)) {
           table.render();
         }
       }

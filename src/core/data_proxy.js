@@ -128,7 +128,7 @@ function canPaste(src, dst, error = () => {}) {
   }
   return true;
 }
-function copyPaste(srcCellRange, dstCellRange, what, autofill = false) {
+function copyPaste(srcCellRange, dstCellRange, what, sheet, autofill = false) {
   const { rows, merges } = this;
   // delete dest merge
   if (what === 'all' || what === 'format') {
@@ -136,6 +136,7 @@ function copyPaste(srcCellRange, dstCellRange, what, autofill = false) {
     merges.deleteWithin(dstCellRange);
   }
   rows.copyPaste(srcCellRange, dstCellRange, what, autofill, (ri, ci, cell) => {
+    sheet.trigger('cell-edited', cell.text, ri, ci);
     if (cell && cell.merge) {
       // console.log('cell:', ri, ci, cell);
       const [rn, cn] = cell.merge;
@@ -145,9 +146,9 @@ function copyPaste(srcCellRange, dstCellRange, what, autofill = false) {
   });
 }
 
-function cutPaste(srcCellRange, dstCellRange) {
+function cutPaste(srcCellRange, dstCellRange, sheet) {
   const { clipboard, rows, merges } = this;
-  rows.cutPaste(srcCellRange, dstCellRange);
+  rows.cutPaste(srcCellRange, dstCellRange, sheet);
   merges.move(srcCellRange,
     dstCellRange.sri - srcCellRange.sri,
     dstCellRange.sci - srcCellRange.sci);
@@ -409,7 +410,7 @@ export default class DataProxy {
   }
 
   // what: all | text | format
-  paste(what = 'all', error = () => {}) {
+  paste(what = 'all', error = () => {}, sheet) {
     // console.log('sIndexes:', sIndexes);
     const { clipboard, selector } = this;
     if (clipboard.isClear()) return false;
@@ -417,28 +418,28 @@ export default class DataProxy {
 
     this.changeData(() => {
       if (clipboard.isCopy()) {
-        copyPaste.call(this, clipboard.range, selector.range, what);
+        copyPaste.call(this, clipboard.range, selector.range, what, sheet);
       } else if (clipboard.isCut()) {
-        cutPaste.call(this, clipboard.range, selector.range);
+        cutPaste.call(this, clipboard.range, selector.range, sheet);
       }
     });
     return true;
   }
 
-  pasteFromText(txt) {
-    const lines = txt.split('\r\n').map(it => it.replace(/"/g, '').split('\t'));
-    if (lines.length > 0) lines.length -= 1;
+  pasteFromText(txt, sheet) {
+    const lines = txt.replace('\r', '').split('\n').map(it => it.replace(/"/g, '').split('\t'));
+    if (lines.length > 1) lines.length -= 1;
     const { rows, selector } = this;
     this.changeData(() => {
-      rows.paste(lines, selector.range);
+      rows.paste(lines, selector.range, sheet);
     });
   }
 
-  autofill(cellRange, what, error = () => {}) {
+  autofill(cellRange, what, error = () => {}, sheet) {
     const srcRange = this.selector.range;
     if (!canPaste.call(this, srcRange, cellRange, error)) return false;
     this.changeData(() => {
-      copyPaste.call(this, srcRange, cellRange, what, true);
+      copyPaste.call(this, srcRange, cellRange, what, sheet, true);
     });
     return true;
   }
@@ -925,7 +926,7 @@ export default class DataProxy {
 
   getCellTextOrDefault(ri, ci) {
     const cell = this.getCell(ri, ci);
-    return (!cell || cell.text === null || cell.text === undefined) ? '' : cell.text
+    return (!cell || cell.text === null || cell.text === undefined) ? '' : cell.text;
   }
 
   getCellStyle(ri, ci) {

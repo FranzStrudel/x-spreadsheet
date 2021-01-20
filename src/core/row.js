@@ -201,34 +201,41 @@ class Rows {
     }
   }
 
-  cutPaste(srcCellRange, dstCellRange) {
+  cutPaste(srcCellRange, dstCellRange, sheet) {
     const ncellmm = {};
     this.each((ri) => {
       this.eachCells(ri, (ci) => {
+        let emit = false;
         let nri = parseInt(ri, 10);
         let nci = parseInt(ci, 10);
         if (srcCellRange.includes(ri, ci)) {
           if (this.getCell(nri, nci).editable === false) {
             ncellmm[nri] = ncellmm[nri] || { cells: {} };
             ncellmm[nri].cells[nci] = this._[ri].cells[ci];
+          } else {
+            sheet.trigger('cell-edited', null, nri, nci);
           }
 
           const tentativeDestNri = dstCellRange.sri + (nri - srcCellRange.sri);
           const tentativeDestNci = dstCellRange.sci + (nci - srcCellRange.sci);
           if (this.getCellOrNew(tentativeDestNri, tentativeDestNci).editable !== false) {
+            emit = true;
             nri = tentativeDestNri;
             nci = tentativeDestNci;
           }
         }
         ncellmm[nri] = ncellmm[nri] || { cells: {} };
         ncellmm[nri].cells[nci] = this._[ri].cells[ci];
+        if (emit) {
+          sheet.trigger('cell-edited', ncellmm[nri].cells[nci].text, nri, nci);
+        }
       });
     });
     this._ = ncellmm;
   }
 
   // src: Array<Array<String>>
-  paste(src, dstCellRange) {
+  paste(src, dstCellRange, sheet) {
     if (src.length <= 0) return;
     const {
       sri,
@@ -239,6 +246,7 @@ class Rows {
       row.forEach((cell, j) => {
         const ci = sci + j;
         this.setCellText(ri, ci, cell);
+        sheet.trigger('cell-edited', cell, ri, ci);
       });
     });
   }
@@ -325,7 +333,7 @@ class Rows {
   }
 
   // what: all | text | format | merge
-  deleteCell(ri, ci, what = 'all') {
+  deleteCell(ri, ci, what = 'all', sheet) {
     const row = this.get(ri);
     if (row !== null) {
       const cell = this.getCell(ri, ci);
@@ -341,6 +349,7 @@ class Rows {
         } else if (what === 'merge') {
           if (cell.merge) delete cell.merge;
         }
+        sheet.trigger('cell-edited', cell.text, ri, ci);
       }
     }
   }
