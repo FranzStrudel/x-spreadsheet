@@ -427,7 +427,7 @@ export default class DataProxy {
   }
 
   pasteFromText(txt, sheet) {
-    const lines = txt.replace('\r', '').split('\n').map(it => it.replace(/"/g, '').split('\t'));
+    const lines = txt.replace(/\r/g, '').split('\n').map(it => it.replace(/"/g, '').split('\t'));
     if (lines.length > 1) lines.length -= 1;
     const { rows, selector } = this;
     this.changeData(() => {
