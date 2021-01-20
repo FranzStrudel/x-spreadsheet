@@ -349,8 +349,7 @@ class Rows {
         } else if (what === 'merge') {
           if (cell.merge) delete cell.merge;
         }
-        if (sheet)
-          sheet.trigger('cell-edited', cell.text, ri, ci);
+        if (sheet) { sheet.trigger('cell-edited', cell.text, ri, ci); }
       }
     }
   }
